@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expenses</title>
+    <link rel="stylesheet" href="css/exp.css">
+</head>
+
+<body>
+
+    <div class="form-container">
+        <h2>Expense</h2>
+
+        <form id="expenses">
+
+            <label for="name">Name</label>
+            <input type="text" id="name" required />
+
+            <label for="date">Date</label>
+            <input type="date" id="date" required />
+
+            <label for="category">Category</label>
+            <select id="category" required>
+                <option value="">Select a Category</option>
+                <option>Food</option>
+                <option>Shokh</option>
+                <option>Entertainment</option>
+                <option>Gadgets</option>
+                <option>Fuel</option>
+                <option>Bills</option>
+                <option>Travel</option>
+                <option>Miscellaneous</option>
+            </select>
+
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" required />
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="output" class="output-box"></div>
+        <div id="copiedMsg" class="copied">Copied to clipboard!</div>
+    </div>
+    <script src="js/exp.js"></script>
+</body>
+
+</html>

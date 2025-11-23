@@ -59,12 +59,15 @@ button:hover {
     margin-top: 20px;
 }
 
-#output table, th, td {
+#output table,
+th,
+td {
     border: 1px solid #ddd;
     text-align: center;
 }
 
-th, td {
+th,
+td {
     padding: 8px;
 }
 

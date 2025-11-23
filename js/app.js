@@ -133,14 +133,14 @@ function findHighestExpense(labelStats) {
 function calculateMonthlyGrowth(monthlyStats) {
     const growth = {};
     const months = Object.keys(monthlyStats).sort();
-    
+
     for (let i = 1; i < months.length; i++) {
         const previousMonth = months[i - 1];
         const currentMonth = months[i];
-        
+
         const previousMonthSum = monthlyStats[previousMonth].reduce((a, b) => a + b, 0);
         const currentMonthSum = monthlyStats[currentMonth].reduce((a, b) => a + b, 0);
-        
+
         growth[currentMonth] = ((currentMonthSum - previousMonthSum) / previousMonthSum) * 100; // percentage change
     }
 
@@ -149,7 +149,7 @@ function calculateMonthlyGrowth(monthlyStats) {
 
 function displayStatistics(stats) {
     const output = document.getElementById("output");
-    
+
     let monthlyHTML = "<h2>Monthly Statistics</h2><table><tr><th>Month</th><th>Sum</th><th>Max</th><th>Min</th></tr>";
     for (const month in stats.monthlyStats) {
         const { sum, max, min } = stats.monthlyStats[month];
@@ -168,12 +168,12 @@ function displayStatistics(stats) {
 
     const sortedLabels = Object.entries(stats.labelStats)
         .sort(([, a], [, b]) => b.sum - a.sum);
-    
+
     for (const [label, { sum, max, min }] of sortedLabels) {
         const average = stats.labelAverages[label];
         labelHTML += `<tr><td>${label}</td><td>${sum}</td><td>${max}</td><td>${min}</td><td>${average}</td></tr>`;
     }
-    
+
     labelHTML += "</table>";
 
     let insightsHTML = `<h2>Insights</h2>
@@ -182,7 +182,7 @@ function displayStatistics(stats) {
                             <li><strong>Average Monthly Expense:</strong> ${stats.averageMonthlyExpense}</li>
                             <li><strong>Highest Expense Label:</strong> ${stats.highestExpenseLabel} - ${stats.highestExpense}</li>
                         </ul>`;
-    
+
     let growthHTML = "<h2>Monthly Expense Growth (%)</h2><table><tr><th>Month</th><th>Growth (%)</th></tr>";
     for (const month in stats.monthlyGrowth) {
         growthHTML += `<tr><td>${month}</td><td>${stats.monthlyGrowth[month].toFixed(2)}%</td></tr>`;
@@ -192,7 +192,7 @@ function displayStatistics(stats) {
     output.innerHTML = `${monthlyHTML}${yearlyHTML}${labelHTML}${insightsHTML}${growthHTML}`;
 }
 
-document.addEventListener("keydown", function(event) {
+document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "Enter") {
         analyzeData();
     }
