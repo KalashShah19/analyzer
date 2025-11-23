@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses Categorizer</title>
+    <link rel="stylesheet" href="css/cat.css">
+</head>
+
+<body>
+
+    <h1>Expense Categorizer</h1>
+
+    <textarea id="expensesInput"
+        placeholder="Paste your expenses here, one per line. Example:&#10;200 - pizza (21/02/25)"></textarea>
+    <button onclick="loadExpenses()">Load Expenses</button>
+
+    <div id="expenseList"></div>
+
+    <button onclick="generateOutput()">Generate Categorized Expenses</button>
+
+    <div class="output" id="output"></div>
+    <script src="js/cat.js"></script>
+</body>
+
+</html>

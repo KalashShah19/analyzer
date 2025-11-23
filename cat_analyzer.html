@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Category Wise Expenses Analyzer</title>
+<style>
+    table { border-collapse: collapse; margin-bottom: 20px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+</style>
+</head>
+<body>
+
+<textarea id="inputData" rows="10" cols="50" placeholder="Enter your expenses here..."></textarea><br>
+<button onclick="analyzeData()">Analyze</button>
+<div id="output"></div>
+
+<script>
+function analyzeData() {
+    const inputText = document.getElementById("inputData").value.trim();
+    if (!inputText) {
+        alert("Please enter some data!");
+        return;
+    }
+
+    const expenses = parseExpenses(inputText);
+    const stats = generateStatistics(expenses);
+    displayStatistics(stats);
+}
+
+function parseExpenses(inputText) {
+    const lines = inputText.split('\n');
+    const expensePattern = /^\s*(\d+(?:\.\d+)?)\s*-\s*([a-zA-Z0-9 ]+),\s*([a-zA-Z0-9 ]+)\s*\(\s*(\d{2})\/(\d{2})\/(\d{2})\s*\)\s*$/;
+    const expenses = [];
+
+    for (const line of lines) {
+        const match = line.match(expensePattern);
+        if (match) {
+            const amount = parseFloat(match[1]);
+            const label = match[2].trim();
+            const category = match[3].trim();
+            const day = parseInt(match[4]);
+            const month = parseInt(match[5]);
+            const year = 2000 + parseInt(match[6]); // assuming 20yy
+
+            expenses.push({ amount, label, category, day, month, year });
+        }
+    }
+
+    return expenses;
+}
+
+function generateStatistics(expenses) {
+    const monthlyStats = {};
+    const yearlyStats = {};
+    const labelStats = {};
+    const categoryStats = {};
+    const allExpenses = [];
+
+    expenses.forEach(expense => {
+        const { amount, label, category, month, year } = expense;
+
+        allExpenses.push(amount);
+
+        const monthKey = `${year}-${month.toString().padStart(2,'0')}`;
+        monthlyStats[monthKey] = monthlyStats[monthKey] || [];
+        monthlyStats[monthKey].push(amount);
+
+        yearlyStats[year] = yearlyStats[year] || [];
+        yearlyStats[year].push(amount);
+
+        labelStats[label] = labelStats[label] || [];
+        labelStats[label].push(amount);
+
+        categoryStats[category] = categoryStats[category] || [];
+        categoryStats[category].push({ amount, monthKey, year });
+    });
+
+    return {
+        totalExpenses: allExpenses.reduce((a, b) => a + b, 0),
+        averageMonthlyExpense: calculateAverage(allExpenses),
+        monthlyStats: processStats(monthlyStats),
+        yearlyStats: processStats(yearlyStats),
+        labelStats: processLabelStats(labelStats),
+        labelAverages: calculateLabelAverages(labelStats),
+        highestExpenseLabel: findHighestExpenseLabel(labelStats),
+        highestExpense: findHighestExpense(labelStats),
+        monthlyGrowth: calculateMonthlyGrowth(monthlyStats),
+        categoryStats: processCategoryStats(categoryStats)
+    };
+}
+
+function processStats(stats) {
+    const processed = {};
+    for (const key in stats) {
+        const values = stats[key];
+        processed[key] = {
+            sum: values.reduce((a, b) => a + b, 0),
+            max: Math.max(...values),
+            min: Math.min(...values)
+        };
+    }
+    return processed;
+}
+
+function processLabelStats(labelStats) {
+    const processed = {};
+    for (const label in labelStats) {
+        const values = labelStats[label];
+        processed[label] = {
+            sum: values.reduce((a, b) => a + b, 0),
+            max: Math.max(...values),
+            min: Math.min(...values)
+        };
+    }
+    return processed;
+}
+
+function calculateAverage(expenses) {
+    const avg = expenses.reduce((a, b) => a + b, 0) / expenses.length;
+    return avg.toFixed(2);
+}
+
+function calculateLabelAverages(labelStats) {
+    const averages = {};
+    for (const label in labelStats) {
+        const values = labelStats[label];
+        averages[label] = calculateAverage(values);
+    }
+    return averages;
+}
+
+function findHighestExpenseLabel(labelStats) {
+    let highestLabel = '';
+    let highestAmount = 0;
+    for (const label in labelStats) {
+        const sum = labelStats[label].reduce((a, b) => a + b, 0);
+        if (sum > highestAmount) {
+            highestAmount = sum;
+            highestLabel = label;
+        }
+    }
+    return highestLabel;
+}
+
+function findHighestExpense(labelStats) {
+    let highestAmount = 0;
+    for (const label in labelStats) {
+        const sum = labelStats[label].reduce((a, b) => a + b, 0);
+        if (sum > highestAmount) {
+            highestAmount = sum;
+        }
+    }
+    return highestAmount;
+}
+
+function calculateMonthlyGrowth(monthlyStats) {
+    const growth = {};
+    const months = Object.keys(monthlyStats).sort();
+
+    for (let i = 1; i < months.length; i++) {
+        const previousMonth = months[i - 1];
+        const currentMonth = months[i];
+
+        const previousMonthSum = monthlyStats[previousMonth].reduce((a, b) => a + b, 0);
+        const currentMonthSum = monthlyStats[currentMonth].reduce((a, b) => a + b, 0);
+
+        growth[currentMonth] = ((currentMonthSum - previousMonthSum) / previousMonthSum) * 100;
+    }
+
+    return growth;
+}
+
+// Category processing
+function processCategoryStats(categoryStats) {
+    const result = {};
+
+    for (const category in categoryStats) {
+        const entries = categoryStats[category];
+
+        const total = entries.reduce((sum, e) => sum + e.amount, 0);
+
+        const monthly = {};
+        entries.forEach(e => {
+            monthly[e.monthKey] = monthly[e.monthKey] || 0;
+            monthly[e.monthKey] += e.amount;
+        });
+
+        const yearly = {};
+        entries.forEach(e => {
+            yearly[e.year] = yearly[e.year] || 0;
+            yearly[e.year] += e.amount;
+        });
+
+        result[category] = { total, monthly, yearly };
+    }
+
+    return result;
+}
+
+function displayCategoryStats(categoryStats) {
+    let html = "<h2>Category-wise Statistics</h2>";
+
+    for (const category in categoryStats) {
+        const { total, monthly, yearly } = categoryStats[category];
+
+        html += `<h3>${category} (Total: ${total})</h3>`;
+
+        html += "<strong>Monthly:</strong><table><tr><th>Month</th><th>Amount</th></tr>";
+        for (const month in monthly) {
+            html += `<tr><td>${month}</td><td>${monthly[month]}</td></tr>`;
+        }
+        html += "</table>";
+
+        html += "<strong>Yearly:</strong><table><tr><th>Year</th><th>Amount</th></tr>";
+        for (const year in yearly) {
+            html += `<tr><td>${year}</td><td>${yearly[year]}</td></tr>`;
+        }
+        html += "</table>";
+    }
+
+    return html;
+}
+
+function displayStatistics(stats) {
+    const output = document.getElementById("output");
+
+    // Monthly
+    let monthlyHTML = "<h2>Monthly Statistics</h2><table><tr><th>Month</th><th>Sum</th><th>Max</th><th>Min</th></tr>";
+    for (const month in stats.monthlyStats) {
+        const { sum, max, min } = stats.monthlyStats[month];
+        monthlyHTML += `<tr><td>${month}</td><td>${sum}</td><td>${max}</td><td>${min}</td></tr>`;
+    }
+    monthlyHTML += "</table>";
+
+    // Yearly
+    let yearlyHTML = "<h2>Yearly Statistics</h2><table><tr><th>Year</th><th>Sum</th><th>Max</th><th>Min</th></tr>";
+    for (const year in stats.yearlyStats) {
+        const { sum, max, min } = stats.yearlyStats[year];
+        yearlyHTML += `<tr><td>${year}</td><td>${sum}</td><td>${max}</td><td>${min}</td></tr>`;
+    }
+    yearlyHTML += "</table>";
+
+    // Label-wise
+    let labelHTML = "<h2>Label-wise Statistics</h2><table><tr><th>Label</th><th>Sum</th><th>Max</th><th>Min</th><th>Average</th></tr>";
+    const sortedLabels = Object.entries(stats.labelStats).sort(([, a], [, b]) => b.sum - a.sum);
+    for (const [label, { sum, max, min }] of sortedLabels) {
+        const average = stats.labelAverages[label];
+        labelHTML += `<tr><td>${label}</td><td>${sum}</td><td>${max}</td><td>${min}</td><td>${average}</td></tr>`;
+    }
+    labelHTML += "</table>";
+
+    // Insights
+    let insightsHTML = `<h2>Insights</h2>
+                        <ul>
+                            <li><strong>Total Expenses:</strong> ${stats.totalExpenses}</li>
+                            <li><strong>Average Monthly Expense:</strong> ${stats.averageMonthlyExpense}</li>
+                            <li><strong>Highest Expense Label:</strong> ${stats.highestExpenseLabel} - ${stats.highestExpense}</li>
+                        </ul>`;
+
+    // Growth
+    let growthHTML = "<h2>Monthly Expense Growth (%)</h2><table><tr><th>Month</th><th>Growth (%)</th></tr>";
+    for (const month in stats.monthlyGrowth) {
+        growthHTML += `<tr><td>${month}</td><td>${stats.monthlyGrowth[month].toFixed(2)}%</td></tr>`;
+    }
+    growthHTML += "</table>";
+
+    // Category
+    const categoryHTML = displayCategoryStats(stats.categoryStats);
+
+    output.innerHTML = `${monthlyHTML}${yearlyHTML}${labelHTML}${insightsHTML}${growthHTML}${categoryHTML}`;
+}
+
+document.addEventListener("keydown", function (event) {
+    if (event.ctrlKey && event.key === "Enter") {
+        analyzeData();
+    }
+});
+</script>
+
+</body>
+</html>
