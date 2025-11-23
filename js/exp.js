@@ -8,7 +8,8 @@ const outputBox = document.getElementById("output");
 // Convert yyyy-mm-dd → dd/mm/yyyy
 function formatDate(dateString) {
     const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
+    const shortYear = year.slice(-2);
+    return `${day}/${month}/${shortYear}`;
 }
 
 document.getElementById("expenses").addEventListener("submit", function (e) {
@@ -19,7 +20,7 @@ document.getElementById("expenses").addEventListener("submit", function (e) {
     const category = document.getElementById("category").value;
     const amount = document.getElementById("amount").value;
 
-    const formatted = `${amount} - ${name}, ${category} (${date})`;
+    const formatted = `${amount} - ${name}, ${category} ( ${date} )`;
 
     // Display output
     outputBox.textContent = formatted;
